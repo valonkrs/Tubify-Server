@@ -4,6 +4,14 @@ import os
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return jsonify({'status': 'ok', 'service': 'tubify'})
+
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok'})
+
 @app.route('/audio/<video_id>')
 def get_audio(video_id):
     try:
@@ -29,10 +37,6 @@ def get_audio(video_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/health')
-def health():
-    return jsonify({'status': 'ok'})
-
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
