@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__)
 
+COOKIES_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
+
 @app.route('/')
 def index():
     return jsonify({'status': 'ok', 'service': 'tubify'})
@@ -16,15 +18,17 @@ def health():
 @app.route('/audio/<video_id>')
 def get_audio(video_id):
     try:
-        result = subprocess.run([
+        cmd = [
             sys.executable, '-m', 'yt_dlp',
             '--no-playlist',
             '-f', 'bestaudio/best',
             '--get-url',
             '--no-check-certificate',
-            '--extractor-args', 'youtube:skip=dash,hls',
+            '--cookies', COOKIES_PATH,
             f'https://www.youtube.com/watch?v={video_id}'
-        ], capture_output=True, text=True, timeout=60)
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
         if result.returncode != 0:
             return jsonify({'error': result.stderr}), 400
