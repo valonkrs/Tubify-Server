@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 import subprocess
+import sys
 import os
 
 app = Flask(__name__)
@@ -15,23 +16,24 @@ def health():
 @app.route('/audio/<video_id>')
 def get_audio(video_id):
     try:
+        # Perdor python -m yt_dlp ne vend te komandes yt-dlp
         result = subprocess.run([
-            'yt-dlp',
+            sys.executable, '-m', 'yt_dlp',
             '--no-playlist',
             '-f', 'bestaudio',
             '--get-url',
             f'https://www.youtube.com/watch?v={video_id}'
-        ], capture_output=True, text=True, timeout=30)
-        
+        ], capture_output=True, text=True, timeout=60)
+
         if result.returncode != 0:
-            return jsonify({'error': 'Could not fetch audio'}), 400
-        
-        url = result.stdout.strip()
+            return jsonify({'error': result.stderr}), 400
+
+        url = result.stdout.strip().split('\n')[0]
         if not url:
             return jsonify({'error': 'No URL found'}), 400
-            
+
         return jsonify({'url': url})
-    
+
     except subprocess.TimeoutExpired:
         return jsonify({'error': 'Timeout'}), 408
     except Exception as e:
