@@ -16,12 +16,13 @@ def health():
 @app.route('/audio/<video_id>')
 def get_audio(video_id):
     try:
-        # Perdor python -m yt_dlp ne vend te komandes yt-dlp
         result = subprocess.run([
             sys.executable, '-m', 'yt_dlp',
             '--no-playlist',
-            '-f', 'bestaudio',
+            '-f', 'bestaudio/best',
             '--get-url',
+            '--no-check-certificate',
+            '--extractor-args', 'youtube:skip=dash,hls',
             f'https://www.youtube.com/watch?v={video_id}'
         ], capture_output=True, text=True, timeout=60)
 
